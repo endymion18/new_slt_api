@@ -2,26 +2,22 @@ import asyncio
 import base64
 import json
 import uuid
-import cProfile
+
 import numpy as np
 import websockets
-import threading
 import time
 from collections import deque
-from multiprocessing import Pool, Process
 import cv2
 from model import Predictor
-from utils import SLInference
+
 import logging
 
 logger = logging.getLogger('websockets')
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
-MAX_THREADS = 1
+users = {}
 model: Predictor | None = None
-user_count = 0
-prof = cProfile.Profile()
 
 
 def init_model(config_path):
@@ -32,28 +28,27 @@ def init_model(config_path):
     model = Predictor(config)
 
 
-def process_images():
-    pass
+def process_image(image: bytes):
+    image_bytes = base64.b64decode(image)
+    frame = np.frombuffer(image_bytes, dtype=np.uint8)
+    image = cv2.imdecode(frame, -1)
+    return image
 
 
 async def handler(websocket: websockets.WebSocketCommonProtocol):
-    user_id = uuid.uuid4()
-    global user_count
-    user_count += 1
+    # user_id = uuid.uuid4()
+    # global connections
+    # number = connections
+    # connections += 1
+    # start_time = time.time()
     image_queue = deque(maxlen=32)
     async for message in websocket:
-        image_bytes = base64.b64decode(message)
-        frame = np.frombuffer(image_bytes, dtype=np.uint8)
-        image = cv2.imdecode(frame, 1)
-
-        image_queue.append(image)
-        print(threading.active_count())
+        image_queue.append(await asyncio.to_thread(process_image, message))
         if len(image_queue) == 32:
-            results = model.predict(image_queue)
-            if results:
-                await websocket.send(str(results))
-                print(user_id, results)
-    #event = json.loads(message)
+            res = await asyncio.to_thread(model.predict, image_queue)
+            if res is not None:
+                print(str(res))
+                await websocket.send(str(res))
 
 
 async def main():
