@@ -1,11 +1,9 @@
 import asyncio
 import base64
 import json
-import uuid
 
 import numpy as np
 import websockets
-import time
 from collections import deque
 import cv2
 from model import Predictor
@@ -36,19 +34,18 @@ def process_image(image: bytes):
 
 
 async def handler(websocket: websockets.WebSocketCommonProtocol):
-    # user_id = uuid.uuid4()
-    # global connections
-    # number = connections
-    # connections += 1
-    # start_time = time.time()
     image_queue = deque(maxlen=32)
-    async for message in websocket:
-        image_queue.append(await asyncio.to_thread(process_image, message))
-        if len(image_queue) == 32:
-            res = await asyncio.to_thread(model.predict, image_queue)
-            if res is not None:
-                print(str(res))
-                await websocket.send(str(res))
+    try:
+        async for message in websocket:
+            await websocket.ensure_open()
+            image_queue.append(await asyncio.to_thread(process_image, message))
+            if len(image_queue) == 32:
+                res = await asyncio.to_thread(model.predict, image_queue)
+                if res is not None and res['labels'][0] != 'no':
+                    print(str(res))
+                    await websocket.send(str(res))
+    except websockets.exceptions.ConnectionClosedError:
+        image_queue.clear()
 
 
 async def main():
