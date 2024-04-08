@@ -44,8 +44,8 @@ async def handler(websocket: websockets.WebSocketCommonProtocol):
                 if res is not None and res['labels'][0] != 'no':
                     print(str(res))
                     await websocket.send(str(res))
-    except websockets.exceptions.ConnectionClosedError:
-        image_queue.clear()
+    except websockets.exceptions.ConnectionClosed:
+        pass
 
 
 async def main():
