@@ -25,13 +25,13 @@ async def start_client():
             retval, buffer = cv2.imencode('.jpg', resize)
             jpg_as_text = base64.b64encode(buffer)
             await websocket.send(jpg_as_text)
-            if j > 32:
-                try:
-                    await asyncio.wait_for(wait_for_message(websocket), timeout=0.1)
-                    print(time.time() - start_time)
-                except asyncio.TimeoutError:
-                    pass
-        loop.stop()
+            # if j > 32:
+            #     try:
+            #         await asyncio.wait_for(wait_for_message(websocket), timeout=0.01)
+            #         print(time.time() - start_time)
+            #     except asyncio.TimeoutError:
+            #         pass
+        print(time.time() - start_time)
         print("closed")
 
 
@@ -39,7 +39,7 @@ gestures_deque = deque(maxlen=5)
 
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()
-    for i in range(1):
+    for i in range(5):
         loop.create_task(start_client())
 
     loop.run_forever()

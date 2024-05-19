@@ -62,7 +62,7 @@ async def main():
         await asyncio.Future()
 
 if __name__ == "__main__":
-    init_model("configs/config.json")
+    init_model("../configs/config.json")
     asyncio.run(main())
 
 

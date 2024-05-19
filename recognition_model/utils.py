@@ -4,6 +4,7 @@ from threading import Thread
 from model import Predictor
 import time
 
+
 class SLInference:
     """
     Main prediction thread.
@@ -52,12 +53,10 @@ class SLInference:
             if len(self.input_queue) == self.config["window_size"]:
                 pred_dict = self.model.predict(self.input_queue)
                 if pred_dict:
-                    #self.pred = pred_dict["labels"][0]
                     self.pred = pred_dict
                     self.input_queue.clear()
                 else:
                     self.pred = ""
-            print(time.time()-x)
             time.sleep(0.1)
 
     def start(self):
