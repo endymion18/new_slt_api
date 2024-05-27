@@ -58,11 +58,10 @@ async def handler(websocket: websockets.WebSocketServerProtocol):
 
 
 async def main():
-    async with websockets.serve(handler, "localhost", 8001, ping_interval=None, max_queue=2**8):
+    async with websockets.serve(handler, "localhost", 8001, ping_interval=None, max_queue=2 ** 8):
         await asyncio.Future()
+
 
 if __name__ == "__main__":
     init_model("../configs/config.json")
     asyncio.run(main())
-
-

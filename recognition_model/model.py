@@ -5,6 +5,7 @@ import numpy as np
 
 if platform in {"win32", "win64"}:
     import onnxruntime.tools.add_openvino_win_libs as utils
+
     utils.add_openvino_libs_to_path()
 
 
@@ -36,7 +37,6 @@ class Predictor:
             idx_lbl_pairs = [x.split("\t") for x in labels]
             self.labels = {int(x[0]): x[1] for x in idx_lbl_pairs}
 
-
     def softmax(self, x):
         exp_x = np.exp(x - np.max(x, axis=1, keepdims=True))
         return exp_x / np.sum(exp_x, axis=1, keepdims=True)
@@ -58,7 +58,7 @@ class Predictor:
         prediction = self.softmax(prediction)
         prediction = np.squeeze(prediction)
 
-        topk_labels = prediction.argsort()[-self.config["topk"] :][::-1]
+        topk_labels = prediction.argsort()[-self.config["topk"]:][::-1]
         topk_confidence = prediction[topk_labels]
 
         result = [self.labels[lbl_idx] for lbl_idx in topk_labels]

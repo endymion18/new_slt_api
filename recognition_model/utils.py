@@ -17,6 +17,7 @@ class SLInference:
         pred (str): The prediction result.
         thread (Thread): The worker thread.
     """
+
     def __init__(self, config_path):
         """
         Initialize the SLInference object.
