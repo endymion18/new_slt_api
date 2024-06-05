@@ -7,6 +7,14 @@ class Description(BaseModel):
     topic: str
     question: str
     description: str
+    description_video: list[dict] = None
+
+
+class DescriptionSl(BaseModel):
+    topic: str
+    question_sl: str = None
+    description_sl: str = None
+    description_video_sl: list[dict] = None
 
 
 class SignLanguageSections(BaseModel):
@@ -37,3 +45,8 @@ class SimpleLanguageSections(BaseModel):
     sections2_icons: Optional[list[HttpUrl]] = None
     sections2_additional: Optional[list[str]] = None
     sections2_additional_icons: Optional[list[HttpUrl]] = None
+
+
+class FullTextResult(BaseModel):
+    rsl: Description
+    sl: DescriptionSl

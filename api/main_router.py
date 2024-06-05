@@ -7,14 +7,12 @@ from pathlib import Path
 from fastapi import APIRouter
 from starlette.responses import FileResponse
 
-from models import Description, SignLanguageSections, SimpleLanguageSections
+from models import Description, SignLanguageSections, SimpleLanguageSections, DescriptionSl, FullTextResult
 from utils import get_sections
-
 
 with open("../configs/api_config.json", "r") as f:
     config = json.load(f)
     es_url = config["base_url"]
-
 
 router = APIRouter()
 requests_client: ClientSession | None = None
@@ -82,32 +80,73 @@ async def get_description(info: str):
         if not response.ok:
             return {"error": "ElasticSearch error"}
         description = await response.json()
-    if len(description["hits"]["hits"]) != 0:
-        return description["hits"]["hits"][0]["_source"]
+        description = description["hits"]["hits"]
+    if len(description) != 0:
+        return description[0]["_source"]
+    return {"error": "Nothing found by your request"}
+
+
+@router.get("/get-description-sl",
+            description="Get description of section for simple language by string of section name and subsection name",
+            response_model=DescriptionSl | dict)
+async def get_sl_description(info: str):
+    body = {
+        "query": {
+            "combined_fields": {
+                "query": info,
+                "fields": ["topic", "question_sl"],
+                "operator": "or"
+            }
+        }
+    }
+    async with requests_client.get(f"/mfc/_search", json=body) as response:
+        if not response.ok:
+            return {"error": "ElasticSearch error"}
+        description = await response.json()
+        description = description["hits"]["hits"]
+    if len(description) != 0:
+        if "question_sl" in description[0]["_source"]:
+            return DescriptionSl(**description[0]["_source"])
+        else:
+            return DescriptionSl(topic=description[0]["_source"]["topic"],
+                                 question_sl=description[0]["_source"]["question"],
+                                 description_sl=description[0]["_source"]["description"])
     return {"error": "Nothing found by your request"}
 
 
 @router.get("/search",
-            description="Get description of section by string of section name and subsection name",
-            response_model=list[Description] | dict)
-async def get_description(info: str):
-    # body = {
-    #     "query": {
-    #         "combined_fields": {
-    #             "query": info,
-    #             "fields": ["topic", "question"],
-    #             "operator": "or"
-    #         }
-    #     }
-    # }
-    # async with requests_client.get(f"/mfc/_search", json=body) as response:
-    #     if not response.ok:
-    #         return {"error": "ElasticSearch error"}
-    #     description = await response.json()
-    # if len(description["hits"]["hits"]) != 0:
-    #     return description["hits"]["hits"][0]["_source"]
+            description="Full-text search in knowledge base",
+            response_model=list[FullTextResult] | dict)
+async def fulltext_search(info: str):
+    body = {
+        "query": {
+            "combined_fields": {
+                "query": info,
+                "fields": ["topic", "question", "description", "description_sl", "question_sl"],
+                "operator": "or"
+            }
+        }
+    }
+    async with requests_client.get(f"/mfc/_search?size=10", json=body) as response:
+        if not response.ok:
+            return {"error": "ElasticSearch error"}
+        description = await response.json()
+        description = description["hits"]["hits"]
+    if len(description) != 0:
+        result = {
+            "rsl": [],
+            "sl": []
+        }
+        for section in description:
+            if "question_sl" in section["_source"]:
+                result["sl"].append(DescriptionSl(**description[0]["_source"]))
+        # if "question_sl" in description[0]["_source"]:
+        #     return DescriptionSl(**description[0]["_source"])
+        # else:
+        #     return DescriptionSl(topic=description[0]["_source"]["topic"],
+        #                          question_sl=description[0]["_source"]["question"],
+        #                          description_sl=description[0]["_source"]["description"])
     # return {"error": "Nothing found by your request"}
-    pass
 
 
 @router.get("/get-rsl-sections",
