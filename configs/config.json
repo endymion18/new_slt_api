@@ -1,8 +1,8 @@
 {
-    "path_to_model": "S3D.onnx",
+    "path_to_model": "recognition_model/S3D.onnx",
     "threshold": 0.5,
     "topk": 2,
-    "path_to_class_list": "RSL_class_list.txt",
+    "path_to_class_list": "recognition_model/RSL_class_list.txt",
     "window_size": 32,
     "provider": "OpenVINOExecutionProvider"
 }

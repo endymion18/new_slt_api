@@ -1,0 +1,75 @@
+{
+    "settings": {
+        "analysis": {
+            "filter": {
+                "russian_stemmer": {
+                    "language": "russian",
+                    "type": "stemmer"
+                },
+                "my_synonyms": {
+                    "type": "synonym",
+                    "synonyms": [
+                        "инн, идентификационный номер налогоплательщика, налог",
+                        "снилс, страховой номер индивидуального лицевого счета, страховка",
+                        "регистрация, регистрационный учет",
+                        "водительское удостоверение, права, водительские права"
+                    ]
+                }
+            },
+            "analyzer": {
+                "russian_analyzer": {
+                    "tokenizer": "standard",
+                    "filter": [
+                        "lowercase",
+                        "my_synonyms",
+                        "russian_stemmer"
+                    ]
+                }
+            }
+        }
+    },
+    "mappings": {
+        "properties": {
+            "answer": {
+                "type": "text",
+                "index": true,
+                "store": false
+            },
+            "description": {
+                "type": "text",
+                "index": true,
+                "store": false,
+                "analyzer": "russian_analyzer"
+            },
+            "description_sl": {
+              "type": "text",
+                "index": true,
+                "store": false,
+                "analyzer": "russian_analyzer"
+            },
+            "question_sl": {
+              "type": "text",
+                "index": true,
+                "store": false,
+                "analyzer": "russian_analyzer"
+            },
+            "name": {
+                "type": "text",
+                "index": true,
+                "store": false
+            },
+            "question": {
+                "type": "text",
+                "analyzer": "russian_analyzer",
+                "index": true,
+                "store": false
+            },
+            "topic": {
+                "type": "text",
+                "analyzer": "russian_analyzer",
+                "index": true,
+                "store": false
+            }
+        }
+    }
+}

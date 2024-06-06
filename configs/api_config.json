@@ -2,5 +2,5 @@
   "sender": "sample@gmail.com",
   "sender_password": "sample_password",
   "receiver": "sample@gmail.com",
-  "base_url": "http://localhost:9200"
+  "base_url": "http://elasticsearch:9200"
 }

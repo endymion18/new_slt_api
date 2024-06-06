@@ -10,7 +10,7 @@ from starlette.responses import FileResponse
 from models import Description, SignLanguageSections, SimpleLanguageSections, DescriptionSl, FullTextResult
 from utils import get_sections
 
-with open("../configs/api_config.json", "r") as f:
+with open("./configs/api_config.json", "r") as f:
     config = json.load(f)
     es_url = config["base_url"]
 
@@ -21,7 +21,7 @@ requests_client: ClientSession | None = None
 @router.on_event("startup")
 async def startup():
     global requests_client
-    requests_client = ClientSession(es_url)
+    requests_client = ClientSession(es_url, trust_env=True)
 
 
 @router.on_event("shutdown")
@@ -116,7 +116,7 @@ async def get_sl_description(info: str):
 
 @router.get("/search",
             description="Full-text search in knowledge base",
-            response_model=list[FullTextResult] | dict)
+            response_model=FullTextResult | dict)
 async def fulltext_search(info: str):
     body = {
         "query": {
@@ -127,26 +127,22 @@ async def fulltext_search(info: str):
             }
         }
     }
-    async with requests_client.get(f"/mfc/_search?size=10", json=body) as response:
+    async with requests_client.get(f"/mfc/_search", json=body) as response:
         if not response.ok:
             return {"error": "ElasticSearch error"}
         description = await response.json()
-        description = description["hits"]["hits"]
-    if len(description) != 0:
-        result = {
-            "rsl": [],
-            "sl": []
-        }
-        for section in description:
-            if "question_sl" in section["_source"]:
-                result["sl"].append(DescriptionSl(**description[0]["_source"]))
-        # if "question_sl" in description[0]["_source"]:
-        #     return DescriptionSl(**description[0]["_source"])
-        # else:
-        #     return DescriptionSl(topic=description[0]["_source"]["topic"],
-        #                          question_sl=description[0]["_source"]["question"],
-        #                          description_sl=description[0]["_source"]["description"])
-    # return {"error": "Nothing found by your request"}
+    if len(description["hits"]["hits"]) != 0:
+        description = description["hits"]["hits"][0]["_source"]
+        if "question_sl" in description:
+            sl = DescriptionSl(**description)
+        else:
+            sl = DescriptionSl(topic=description["topic"],
+                               question_sl=description["question"],
+                               description_sl=description["description"])
+        rsl = Description(**description)
+
+        return FullTextResult(rsl=rsl, sl=sl)
+    return {"error": "Nothing found by your request"}
 
 
 @router.get("/get-rsl-sections",
