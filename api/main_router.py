@@ -14,7 +14,7 @@ with open("./configs/api_config.json", "r") as f:
     config = json.load(f)
     es_url = config["base_url"]
 
-router = APIRouter()
+router = APIRouter(prefix="/ivr-unt")
 requests_client: ClientSession | None = None
 
 
