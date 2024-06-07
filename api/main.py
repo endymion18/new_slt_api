@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from main_router import router as main_router
 from admin_router import router as admin_router
 
-app = FastAPI(docs_url="/ivr-unt/docs")
+app = FastAPI(openapi_url="/ivr-unt/openapi.json")
 
 origins = [
     "http://localhost:3000",
