@@ -94,7 +94,7 @@ async def get_sl_description(info: str):
         "query": {
             "combined_fields": {
                 "query": info,
-                "fields": ["topic", "question_sl"],
+                "fields": ["topic", "question", "question_sl"],
                 "operator": "or"
             }
         }
@@ -122,7 +122,7 @@ async def fulltext_search(info: str):
         "query": {
             "combined_fields": {
                 "query": info,
-                "fields": ["topic", "question", "description", "description_sl", "question_sl"],
+                "fields": ["topic", "question", "description"],
                 "operator": "or"
             }
         }
