@@ -7,7 +7,7 @@ class Description(BaseModel):
     topic: str
     question: str
     description: str
-    full_video: str
+    full_video: str = None
     description_video: list[dict] = None
 
 
